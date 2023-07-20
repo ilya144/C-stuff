@@ -126,13 +126,30 @@ string md5(string message){
 }
 
 int main(int argc, string argv[]){
-    if (argc < 2 || (argc >= 2 ? !strcmp("--help", argv[1]) : 0)) {
+    const int initial_buffer_size = 4096;
+    uint8_t stdin_provided = 0;
+
+    string buffer = malloc(initial_buffer_size);
+    uint64_t buffer_size = initial_buffer_size;
+    string buf_ptr = buffer;
+
+    while (
+        fread(buf_ptr, sizeof(char), stdin_provided ? buffer_size / 2 : buffer_size, stdin)
+    ){
+        stdin_provided = 1;
+
+        buffer = realloc(buffer, buffer_size * 2);
+        buf_ptr = &buffer[buffer_size];
+        buffer_size = buffer_size * 2;
+    };
+
+    if (!stdin_provided && argc < 2 || (argc >= 2 ? !strcmp("--help", argv[1]) : 0)) {
         puts("Usage: md5 [OPTIONS] [STRING ARGUMENT]");
 
         return 0;
     }
 
-    string data = argv[1];
+    string data = stdin_provided ? buffer : argv[1];
     string hash = md5(data);
     printf("%s\n", hash);
 
