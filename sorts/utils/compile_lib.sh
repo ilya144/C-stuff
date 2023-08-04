@@ -1,0 +1,1 @@
+gcc -c utils.c && ar rcs libutils.a utils.o
